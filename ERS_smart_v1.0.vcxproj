@@ -27,6 +27,9 @@
     <ClInclude Include="ERS_smart\src\PrecompiledHeaders.h" />
     <ClInclude Include="ERS_smart\src\SmartComponent\SmartComponent.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

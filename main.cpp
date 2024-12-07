@@ -1,46 +1,39 @@
 #include "ERS_smart/src/ERS/EntityRegistrySystem.h"
 
 struct Vec2 {
-	float x = 0;
-	float y = 0;
+	float* x;
+
+	Vec2() {
+		x = nullptr;
+	}
+
+	Vec2(Vec2&& other) noexcept{
+		x = other.x;
+		other.x = nullptr;
+	}
+
+	~Vec2() {
+		delete x;
+	}
 };
 
 int main() {
-	EntityRegistrySystem ers;
+	ers::Context context;
 
-	std::vector<entity_id_t> vec_entities;
+	std::vector<ers::entity_id> vec;
 
 	std::cin.get();
 
-	for (int i = 0; i < 100; i++) {
-		entity_id_t e = ers.add_entity();
-		ers.add_component<Vec2>(e);
-		vec_entities.push_back(e);
-	}
-	std::cin.get();
-
-	for (auto e : vec_entities){
-		ers.delete_entity(e);
-	
+	for (int i = 0; i < 1000; i++) {
+		ers::entity_id entity = context.add_entity();
+		context.add_component<Vec2>(entity)->x = new float(15);
 	}
 
-	vec_entities.clear();
 
 	std::cin.get();
 
-	for (int i = 0; i < 100; i++) {
-		entity_id_t e = ers.add_entity();
-		ers.add_component<Vec2>(e);
-		vec_entities.push_back(e);
-	}
-	std::cin.get();
-
-	for (auto e : vec_entities) {
-		ers.delete_entity(e);
-
-	}
-
-	vec_entities.clear();
+	context.~EntityRegistrySystem();
 
 	std::cin.get();
+
 }
