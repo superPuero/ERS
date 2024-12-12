@@ -1,10 +1,13 @@
 #pragma once
 #include <iostream>
-template<typename...L>
-inline void log_function(L...args) {
-	std::cout << '\n';
-	((std::cout << args << ' '), ...);
-}
+
+namespace ers {
+	template<typename...L>
+	inline void log_function(L...args) {
+		((std::cout << args << ' '), ...);
+		std::cout << '\n';
+
+	}
 
 #define ERS_LOG(...) log_function(__VA_ARGS__)
 
@@ -30,3 +33,4 @@ inline void log_function(L...args) {
 #define ERS_LOG_CRITICAL_ERROR(...)
 #define ERS_LOG_ERROR(...)
 #endif // ERS_INFO
+}
