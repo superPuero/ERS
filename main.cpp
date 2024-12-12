@@ -36,6 +36,6 @@ int main() {
 	
 	ers::entity e = context.entity_add();
 
-	context.component_emplace<TransformComponent>(e);
+	context.component_emplace<TransformComponent>(e, {1,2});
 	
 }
