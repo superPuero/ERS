@@ -6,10 +6,10 @@
 
 namespace ers {
 
-typedef uint32_t entity_id_t;
-typedef entity_id_t entity;
+	typedef uint32_t entity_id_t;
+	typedef entity_id_t entity;
 
-typedef std::type_index component_id_t;
+	typedef std::type_index component_id_t;
 
 	class Context {
 
@@ -28,7 +28,7 @@ typedef std::type_index component_id_t;
 		[[nodiscard]] entity_id_t entity_add() {
 			uint32_t new_id = m_id_counter;
 			m_id_counter++;
-			m_map_entity_components_data.insert({ new_id, std::unordered_map<component_id_t, SmartComponent>()});
+			m_map_entity_components_data.insert({ new_id, std::unordered_map<component_id_t, SmartComponent>() });
 
 			ERS_LOG_INFO("Added entity. ID:", new_id);
 
@@ -49,13 +49,13 @@ typedef std::type_index component_id_t;
 		}
 
 		template<typename A>
-		inline A* component_add(entity_id_t entity_id) {
+		inline A& component_add(entity_id_t entity_id) {
 			component_id_t component_id = typeid(A);
 
 			ERS_ASSERT(valid(entity_id));
 			ERS_ASSERT(!valid(entity_id, component_id));
 
-			m_map_entity_components_data.at(entity_id).emplace( component_id, A() );
+			m_map_entity_components_data.at(entity_id).emplace(component_id, A());
 
 			if (!valid(component_id)) {
 				m_map_component_common_entitites.insert({ component_id, std::unordered_set<entity_id_t>() });
@@ -66,19 +66,19 @@ typedef std::type_index component_id_t;
 
 			ERS_LOG_INFO("Added component", component_id.name(), "to", entity_id);
 
-			return static_cast<A*>(m_map_entity_components_data.at(entity_id).at(component_id).data);
+			return *(static_cast<A*>(m_map_entity_components_data.at(entity_id).at(component_id).data));
 		}
 
 		template<typename E>
-		inline E* component_emplace(entity_id_t entity_id, E&& component) {
+		inline E& component_emplace(entity_id_t entity_id, E&& component) {
 
 			component_id_t component_id = typeid(E);
-				
+
 			ERS_ASSERT(valid(entity_id));
 			ERS_ASSERT(!valid(entity_id, component_id));
 
-			m_map_entity_components_data.at(entity_id).emplace( component_id, std::forward<E>(component) );
-			
+			m_map_entity_components_data.at(entity_id).emplace(component_id, std::forward<E>(component));
+
 			if (!valid(component_id)) {
 				m_map_component_common_entitites.insert({ component_id, std::unordered_set<entity_id_t>() });
 				ERS_LOG_INFO("Added component", component_id.name(), "to common components map");
@@ -87,16 +87,15 @@ typedef std::type_index component_id_t;
 			m_map_component_common_entitites.at(component_id).insert(entity_id);
 
 			ERS_LOG_INFO("Emplaced component", component_id.name(), "to", entity_id);
-			return static_cast<E*>(m_map_entity_components_data.at(entity_id).at(component_id).data);
+			return *(static_cast<E*>(m_map_entity_components_data.at(entity_id).at(component_id).data));
 		}
 
 		template<typename...E>
-		std::enable_if_t<(sizeof...(E) > 0), void>
-		inline component_emplace_pack(entity_id_t entity_id, E&&...component) {
+		inline void component_emplace_pack(entity_id_t entity_id, E&&...component) {
 
 			const size_t components_count = sizeof...(E);
 
-			(component_emplace<E>(entity_id, std::forward<E>(component)),...);
+			(component_emplace<E>(entity_id, std::forward<E>(component)), ...);
 
 			return;
 		}
@@ -112,7 +111,7 @@ typedef std::type_index component_id_t;
 			ERS_ASSERT(valid(from_entity_id, component_id));
 			ERS_ASSERT(!valid(to_entity_id, component_id));
 
-			m_map_entity_components_data.at(to_entity_id).emplace( component_id, *component_get<C>(from_entity_id) );
+			m_map_entity_components_data.at(to_entity_id).emplace(component_id, component_get<C>(from_entity_id));
 			m_map_component_common_entitites.at(component_id).insert(to_entity_id);
 
 			ERS_LOG_INFO("Copied component", component_id.name(), "from entity", from_entity_id, "to entity", to_entity_id);
@@ -122,23 +121,23 @@ typedef std::type_index component_id_t;
 
 		template<typename...C>
 		std::enable_if_t<(sizeof...(C) > 1)>
-		inline component_copy(entity_id_t from_entity_id, entity_id_t to_entity_id) {
+			inline component_copy(entity_id_t from_entity_id, entity_id_t to_entity_id) {
 
-			(component_copy<C>(from_entity_id, to_entity_id),...);
+			(component_copy<C>(from_entity_id, to_entity_id), ...);
 
 			return;
 		}
 
 
 		template<typename G>
-		[[nodiscard]] inline G* component_get(entity_id_t entity_id) {
+		[[nodiscard]] inline G& component_get(entity_id_t entity_id) {
 
 			component_id_t component_id = typeid(G);
 
 			ERS_ASSERT(valid(entity_id));
 			ERS_ASSERT(valid(entity_id, component_id));
 
-			return static_cast<G*>(m_map_entity_components_data.at(entity_id).at(component_id).data);
+			return *(static_cast<G*>(m_map_entity_components_data.at(entity_id).at(component_id).data));
 		}
 
 		template<typename D>
@@ -153,84 +152,68 @@ typedef std::type_index component_id_t;
 			m_map_component_common_entitites.at(component_id).erase(entity_id);
 
 			ERS_LOG_INFO("Deleted component", component_id.name(), "from entity", entity_id);
-
 		}
 
 		template<typename...T>
-		[[nodiscard]] std::enable_if_t<sizeof...(T), const std::unordered_set<entity_id_t>>
-		inline entities_get_by_commmon_component() {
+		[[nodiscard]] std::enable_if_t<sizeof...(T), const std::vector<entity_id_t>>
+			inline entities_get_group() {
 
 			const size_t elements_num = sizeof...(T);
-			std::unordered_set<entity_id_t> result;
-			component_id_t arr_component_ids[elements_num] = {typeid(T)...};
+			std::vector<entity_id_t> group;
+			component_id_t arr_component_ids[elements_num] = { typeid(T)... };
 
 			ERS_ASSERT(valid(arr_component_ids[0]));
 
-			result = m_map_component_common_entitites.at(arr_component_ids[0]);
-			std::unordered_set<entity_id_t> set_temp;
+			for (entity_id_t e : m_map_component_common_entitites.at(arr_component_ids[0])) {
+				group.push_back(e);
+			}
+
+			std::vector<entity_id_t> temp;
 
 			for (component_id_t curr_component_id : arr_component_ids) {
 
-				;if (!valid(curr_component_id)) {
-					return std::unordered_set<entity_id_t>();
+				; if (!valid(curr_component_id)) {
+					return std::vector<entity_id_t>();
 				}
 
-				if (m_map_component_common_entitites.at(curr_component_id) != result) {
-					for (entity_id_t curr_entity_id : result) {
-						if (valid(curr_entity_id, curr_component_id)) {
-							set_temp.insert(curr_entity_id);
-						}
+				for (entity_id_t curr_entity_id : group) {
+					if (valid(curr_entity_id, curr_component_id)) {
+						temp.push_back(curr_entity_id);
 					}
-
-					result = set_temp;
-					set_temp.clear();
-
 				}
+				group = temp;
+				temp.clear();
 
 			}
-			return result;
+			return group;
 
 		}
 
-		template<typename Component>
-		[[nodiscard]] inline std::unordered_set<Component*> components_data_get_all() {
+		template<typename...Component>
+		[[nodiscard]] inline std::vector<std::tuple<Component&...>> component_get_group() {
 
-			component_id_t component_id = typeid(Component);
+			const size_t elements_num = sizeof...(Component);
+			component_id_t arr_component_ids[elements_num] = { typeid(Component)... };
 
-			ERS_ASSERT(valid(component_id));
+			for (auto component : arr_component_ids) {
+				ERS_ASSERT(valid(component));
 
-			std::unordered_set<Component*> set_return;
-
-			for (entity_id_t entity_id : m_map_component_common_entitites.at(component_id)) {
-				set_return.insert(static_cast<Component*>(m_map_entity_components_data.at(entity_id).at(component_id).data));
 			}
 
-			return set_return;
-		}
+			std::vector<std::tuple<Component&...>> group;
 
-		template<typename Component>
-		[[nodiscard]] inline std::unordered_set<Component*> components_data_get_all(std::unordered_set<entity_id_t>&& range) {
-
-			component_id_t component_id = typeid(Component);
-
-			ERS_ASSERT(valid(component_id));
-
-			std::unordered_set<Component*> set_return;
-
-			for (entity_id_t entity_id : m_map_component_common_entitites.at(component_id)) {
-				if (range.contains(entity_id)) {
-					set_return.insert(static_cast<Component*>(m_map_entity_components_data.at(entity_id).at(component_id).data));
-				}
+			for (entity_id_t entity_id : entities_get_group<Component...>()) {
+				group.push_back({ component_get<Component>(entity_id)... });
 			}
 
-			return set_return;
+			return group;
 		}
 
 	private:
 		[[nodiscard]] bool valid(entity_id_t entity_id) {
 			return m_map_entity_components_data.contains(entity_id);
 		}
-		
+
 		[[nodiscard]] bool valid(component_id_t component_id) {
 			return m_map_component_common_entitites.contains(component_id);
 		}
