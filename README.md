@@ -1,2 +1,2 @@
 ﻿# SMARTEntityRegistrySystem
-ERS with SmartComponents implemented.
+Basic entity compoonnet system
